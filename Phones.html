@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Spreading the Word · Cell Phone Technology</title>
+
+<!-- GSAP Suite -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS (unchanged layout, only concept)
+═══════════════════════════════════════════════ */
+:root {
+  --cream:     #F5F0E8;
+  --ink:       #1A1410;
+  --coral:     #FF4D1C;
+  --gold:      #E8A020;
+  --sage:      #3D6B4F;
+  --warm-gray: #8C8070;
+  --rule:      rgba(26,20,16,.12);
+
+  --f-display: 'Fraunces', Georgia, serif;
+  --f-mono:    'DM Mono', 'Courier New', monospace;
+  --f-sans:    'Instrument Sans', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--f-sans);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ─── CURSOR ──────────────────────────────── */
+#cur {
+  position: fixed; z-index: 9999; pointer-events: none;
+  width: 12px; height: 12px;
+  background: var(--coral); border-radius: 50%;
+  top: 0; left: 0;
+  transform: translate(-50%,-50%);
+  mix-blend-mode: multiply;
+  transition: width .25s, height .25s;
+}
+#cur.big { width: 72px; height: 72px; }
+#cur-ring {
+  position: fixed; z-index: 9998; pointer-events: none;
+  width: 38px; height: 38px;
+  border: 1.5px solid rgba(255,77,28,.45);
+  border-radius: 50%;
+  top: 0; left: 0;
+  transform: translate(-50%,-50%);
+}
+
+#pg { position:fixed;top:0;left:0;z-index:1000;height:3px;background:var(--coral);transform-origin:left;transform:scaleX(0);width:100%; }
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+  padding: 22px 52px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo {
+  font-family: var(--f-display); font-weight: 800; font-size: 15px;
+  letter-spacing: -.01em; text-transform: uppercase; color: var(--ink);
+}
+.logo sup { font-family: var(--f-mono); font-size: 9px; font-weight:400; color:var(--coral); letter-spacing:.1em; }
+.nav-ul { display:flex; gap:32px; list-style:none; }
+.nav-ul a {
+  font-family:var(--f-mono); font-size:10px; letter-spacing:.15em;
+  text-transform:uppercase; text-decoration:none; color:var(--ink); opacity:.4; transition:opacity .3s;
+}
+.nav-ul a:hover { opacity:1; }
+
+.ticker-band {
+  margin-top: 66px;
+  background: var(--coral); color: var(--cream);
+  border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink);
+  padding: 10px 0; overflow: hidden;
+}
+.ticker-inner {
+  display: flex; white-space: nowrap;
+  font-family: var(--f-mono); font-size: 11px;
+  letter-spacing: .2em; text-transform: uppercase;
+  animation: tickMove 30s linear infinite;
+}
+.ticker-inner span { padding: 0 36px; }
+.ticker-inner .sep { opacity:.4; }
+@keyframes tickMove { to { transform: translateX(-50%); } }
+
+/* HERO */
+#hero {
+  min-height: 100vh;
+  padding: 80px 52px 72px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  align-items: end;
+  border-bottom: 2px solid var(--ink);
+}
+.hero-over {
+  grid-column: 1/-1;
+  font-family: var(--f-mono); font-size: 10px;
+  letter-spacing: .25em; text-transform: uppercase;
+  color: var(--warm-gray); margin-bottom: 36px;
+  display: flex; align-items: center; gap: 16px; opacity: 0;
+}
+.hero-over::before { content:''; width:28px; height:1px; background:var(--warm-gray); }
+
+h1.hero-h1 {
+  font-family: var(--f-display); font-weight: 900;
+  font-size: clamp(4.5rem, 10vw, 9.5rem);
+  line-height: .88; letter-spacing: -.04em; color: var(--ink);
+  border-right: 2px solid var(--ink); padding-right: 52px;
+  overflow: hidden;
+}
+h1.hero-h1 em { font-style: italic; color: var(--coral); display: block; }
+.hline { overflow: hidden; }
+.hword { display: block; }
+
+.hero-r {
+  padding-left: 52px;
+  display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 4px;
+}
+.hero-desc {
+  font-size: 1.05rem; color: var(--warm-gray); line-height: 1.8;
+  margin-bottom: 36px; max-width: 400px; opacity: 0;
+}
+.btn-row { display:flex; flex-wrap:wrap; gap:12px; opacity:0; }
+
+.btn {
+  font-family: var(--f-mono); font-size: 10px;
+  letter-spacing: .15em; text-transform: uppercase;
+  border: 1.5px solid var(--ink); padding: 10px 22px;
+  border-radius: 999px; text-decoration: none; color: var(--ink);
+  background: transparent; cursor: none; position: relative; overflow: hidden;
+  transition: color .3s;
+}
+.btn::before {
+  content:''; position:absolute; inset:0; border-radius:999px;
+  background:var(--ink); transform:scale(0);
+  transition: transform .4s cubic-bezier(.77,0,.18,1);
+}
+.btn:hover::before { transform:scale(1); }
+.btn:hover { color:var(--cream); }
+.btn span { position:relative; }
+.btn-fill { background:var(--coral); border-color:var(--coral); color:var(--cream); }
+.btn-fill::before { background:var(--ink); }
+
+.stat-strip {
+  grid-column: 1/-1; margin-top: 72px; padding-top: 32px;
+  border-top: 1px solid var(--rule);
+  display: grid; grid-template-columns: repeat(3,1fr); gap:0;
+}
+.hs { padding-right:36px; border-right:1px solid var(--rule); opacity:0; }
+.hs:nth-child(2) { padding:0 36px; }
+.hs:last-child { padding-left:36px; border-right:none; }
+.hs-n {
+  font-family:var(--f-display); font-weight:900;
+  font-size:clamp(2.8rem,5vw,4.5rem); line-height:1; color:var(--ink); display:block;
+}
+.hs-l {
+  font-family:var(--f-mono); font-size:10px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--warm-gray); margin-top:6px; display:block;
+}
+
+.sec-eye {
+  font-family:var(--f-mono); font-size:10px; letter-spacing:.25em;
+  text-transform:uppercase; color:var(--warm-gray);
+  display:flex; align-items:center; gap:14px; margin-bottom:20px;
+}
+.sec-eye::after { content:''; flex:1; height:1px; background:var(--rule); }
+.sec-h2 {
+  font-family:var(--f-display); font-weight:900;
+  font-size:clamp(2.6rem,5vw,4.8rem); line-height:.92; letter-spacing:-.03em; color:var(--ink); margin-bottom:28px;
+}
+.sec-h2 em { font-style:italic; color:var(--coral); }
+.sec-p { font-size:1rem; color:var(--warm-gray); line-height:1.8; max-width:480px; }
+
+/* SMART HORIZONTAL -> SIGNAL JOURNEY CONCEPT */
+#smart-wrap { border-top:2px solid var(--ink); border-bottom:2px solid var(--ink); position:relative; }
+#smart-pin { display:flex; height:100vh; }
+.smart-intro {
+  flex:0 0 38vw; padding:72px 52px;
+  display:flex; flex-direction:column; justify-content:center;
+  border-right:2px solid var(--ink);
+  background:var(--cream); position:relative;
+}
+.s-hint { margin-top:auto; padding-top:48px; }
+.s-hint p { font-family:var(--f-mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--warm-gray); }
+#s-bar { width:80px; height:2px; background:var(--coral); transform-origin:left; transform:scaleX(0); margin-top:10px; }
+
+.smart-track { display:flex; }
+.sc {
+  flex:0 0 370px; height:100vh; padding:72px 48px;
+  border-right:2px solid var(--ink);
+  display:flex; flex-direction:column; justify-content:space-between;
+  background:var(--cream); position:relative; overflow:hidden;
+}
+.sc:nth-child(2) { background:var(--ink); }
+.sc:nth-child(2) .sc-t,.sc:nth-child(2) .sc-b,.sc:nth-child(2) .sci { color:var(--cream); }
+.sc:nth-child(2) .sc-eye { color:rgba(245,240,232,.35); }
+.sc:nth-child(2) .sc-ghost { color:rgba(255,255,255,.06); }
+.sc:nth-child(4) { background:var(--coral); }
+.sc:nth-child(4) .sc-t { color:var(--cream); }
+.sc:nth-child(4) .sc-b { color:rgba(245,240,232,.7); }
+.sc:nth-child(4) .sc-eye { color:rgba(245,240,232,.4); }
+.sc:nth-child(4) .sc-ghost { color:rgba(255,255,255,.08); }
+.sc:last-child { border-right:none; }
+
+.sc-top { display:flex; justify-content:space-between; align-items:flex-start; }
+.sc-idx { font-family:var(--f-mono);font-size:10px;letter-spacing:.2em;color:var(--warm-gray); }
+.sc-ico { width:52px;height:52px;border-radius:50%;background:rgba(26,20,16,.06);display:flex;align-items:center;justify-content:center;font-size:22px; }
+.sc-bot {}
+.sc-rule { width:28px; height:2px; background:var(--coral); margin-bottom:16px; }
+.sc-eye { font-family:var(--f-mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:12px; }
+.sc-t { font-family:var(--f-display);font-weight:800;font-size:1.75rem;line-height:1.1;letter-spacing:-.02em;color:var(--ink);margin-bottom:14px; }
+.sc-b { font-size:.875rem;line-height:1.7;color:var(--warm-gray); }
+.sc-ghost {
+  font-family:var(--f-display);font-weight:900;
+  font-size:10rem;line-height:1;color:rgba(26,20,16,.05);
+  position:absolute;bottom:-24px;right:12px;pointer-events:none;
+}
+
+/* SIGNAL JOURNEY SECTION - updated to match book challenges */
+#signal { padding:100px 52px; border-bottom:2px solid var(--ink); }
+.sig-grid { display:grid; grid-template-columns:1fr 1px 1fr; margin-top:72px; }
+.sig-div { background:var(--rule); }
+.steps { padding-right:56px; }
+.steps-r { padding-left:56px; }
+
+.step {
+  padding:32px 0; border-bottom:1px solid var(--rule);
+  display:flex; gap:24px; opacity:0; transform:translateY(20px);
+}
+.step:last-child { border-bottom:none; }
+.step-n { font-family:var(--f-display);font-weight:900;font-size:1.1rem;color:var(--coral);flex-shrink:0;padding-top:3px;line-height:1; }
+.step-tag { font-family:var(--f-mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:6px; }
+.step-h { font-family:var(--f-display);font-weight:700;font-size:1.15rem;letter-spacing:-.02em;color:var(--ink);margin-bottom:8px;line-height:1.2; }
+.step-p { font-size:.875rem;color:var(--warm-gray);line-height:1.7; }
+
+.challenges {
+  background:var(--ink); color:var(--cream); padding:52px 44px;
+  position:sticky; top:90px;
+}
+.ch-h { font-family:var(--f-display);font-weight:900;font-size:2.2rem;line-height:1;letter-spacing:-.03em;color:var(--cream);margin-bottom:32px; }
+.ch-h em { font-style:italic;color:var(--coral); }
+.ch-item { padding:18px 0;border-bottom:1px solid rgba(255,255,255,.07);display:flex;gap:18px;align-items:flex-start;opacity:0;transform:translateX(16px); }
+.ch-item:last-child { border-bottom:none; }
+.ch-ico { flex-shrink:0;font-size:18px;width:38px;height:38px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;border-radius:4px; }
+.ch-hd { font-weight:600;font-size:.9rem;color:var(--cream);margin-bottom:3px; }
+.ch-bd { font-size:.8rem;color:rgba(245,240,232,.4);line-height:1.6; }
+
+/* IMPACT: mobile money west africa etc */
+#impact { padding:100px 52px; border-bottom:2px solid var(--ink); }
+.impact-grid { display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:72px;border:2px solid var(--ink); }
+.impact-feat {
+  background:var(--sage); padding:68px 52px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  color:var(--cream); grid-row:span 2;
+}
+.impact-feat .sec-h2 { color:var(--cream); }
+.impact-feat .sec-h2 em { color:var(--gold); }
+.feat-stat { border-top:1px solid rgba(255,255,255,.15); padding-top:32px; }
+.feat-n { font-family:var(--f-display);font-weight:900;font-size:5rem;line-height:1;color:var(--cream);letter-spacing:-.04em; }
+.feat-l { font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:6px; }
+
+.ic { background:var(--cream); padding:48px 44px; border-left:2px solid var(--ink); border-bottom:2px solid var(--ink); opacity:0;transform:translateY(16px); }
+.ic:last-child { border-bottom:none; }
+.ic-tag { font-family:var(--f-mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;display:flex;align-items:center;gap:8px;margin-bottom:24px; }
+.dot { width:6px;height:6px;border-radius:50%; }
+.dpro { background:var(--sage); }
+.dcon { background:var(--coral); }
+.ic-h { font-family:var(--f-display);font-weight:800;font-size:1.4rem;letter-spacing:-.02em;color:var(--ink);margin-bottom:18px; }
+.ic-list { list-style:none; }
+.ic-list li { padding:10px 0;border-bottom:1px solid var(--rule);font-size:.875rem;color:var(--warm-gray);line-height:1.6;display:flex;gap:10px; }
+.ic-list li:last-child { border-bottom:none; }
+.arr { color:var(--coral);flex-shrink:0; }
+
+/* FIRST AID -> now "Spreading the word" resources */
+#firstaid {
+  padding:100px 52px;
+  background:var(--ink); color:var(--cream);
+  border-bottom:2px solid var(--ink);
+  position:relative; overflow:hidden;
+}
+#firstaid::before {
+  content:'CONNECT';
+  position:absolute;right:-60px;bottom:-80px;
+  font-family:var(--f-display);font-weight:900;font-size:22vw;line-height:1;
+  color:rgba(255,255,255,.025);pointer-events:none;letter-spacing:-.05em;white-space:nowrap;
+}
+.kit-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:64px; }
+.kc { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); padding:40px 32px; opacity:0; transform:translateY(16px); transition:background .3s,border-color .3s; }
+.kc:hover { background:rgba(255,255,255,.06);border-color:rgba(255,77,28,.25); }
+.kc-n { font-family:var(--f-display);font-weight:900;font-size:3rem;line-height:1;color:var(--coral);opacity:.35;margin-bottom:20px; }
+.kc-h { font-weight:600;font-size:1rem;color:var(--cream);margin-bottom:12px; }
+.kc-p { font-size:.85rem;color:rgba(245,240,232,.38);line-height:1.7; }
+.kc-a { display:inline-flex;align-items:center;gap:8px;margin-top:20px; font-family:var(--f-mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase; color:var(--coral);text-decoration:none;border-bottom:1px solid rgba(255,77,28,.25);padding-bottom:3px;cursor:none; transition:border-color .3s; }
+.kc-a:hover { border-color:var(--coral); }
+
+/* GAMES SECTION unchanged mechanics */
+.games-section {
+  padding: 100px 52px;
+  background: linear-gradient(135deg, var(--cream) 0%, #f0e9df 100%);
+  border-bottom: 2px solid var(--ink);
+  position: relative;
+  overflow: hidden;
+}
+.games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 40px; margin-top: 56px; }
+.game-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(2px); border: 2px solid var(--ink); border-radius: 32px; padding: 28px; transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 8px 8px 0 rgba(26,20,16,0.08); }
+.game-title { font-family: var(--f-display); font-weight: 800; font-size: 1.6rem; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 8px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.game-badge { font-family: var(--f-mono); font-size: 10px; background: var(--coral); color: var(--cream); padding: 4px 12px; border-radius: 40px; letter-spacing: 0.1em; }
+.game-desc { font-size: 0.85rem; color: var(--warm-gray); margin-bottom: 24px; line-height: 1.5; }
+.game-area { background: var(--cream); border-radius: 24px; padding: 24px; text-align: center; border: 1px solid var(--rule); min-height: 320px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.phish-quiz-option { background: white; border: 2px solid var(--rule); padding: 12px 16px; margin: 8px 0; border-radius: 60px; cursor: none; font-family: var(--f-sans); font-size: 0.85rem; transition: all 0.2s; text-align: left; width: 100%; }
+.game-btn { background: var(--ink); color: var(--cream); border: none; font-family: var(--f-mono); font-size: 11px; padding: 10px 20px; border-radius: 60px; cursor: none; margin-top: 16px; transition: all 0.2s ease; }
+.game-btn:hover { background: var(--coral); transform: scale(0.96); }
+.drag-zone { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 16px 0; }
+.drag-item { background: var(--ink); color: var(--cream); padding: 10px 18px; border-radius: 60px; font-size: 0.8rem; font-family: var(--f-mono); cursor: none; user-select: none; }
+.drop-zone { background: rgba(61,107,79,0.1); border: 2px dashed var(--sage); border-radius: 20px; padding: 20px; margin-top: 12px; min-height: 70px; font-size: 0.8rem; font-family: var(--f-mono); text-align: center; }
+#cta { min-height:70vh;padding:120px 52px;position:relative;overflow:hidden; border-bottom:2px solid var(--ink); }
+.cta-bg { position:absolute;inset:0;display:flex;align-items:center;justify-content:center; font-family:var(--f-display);font-weight:900;font-size:clamp(9rem,20vw,20rem); color:rgba(26,20,16,.04);letter-spacing:-.05em;pointer-events:none;user-select:none;white-space:nowrap; }
+.cta-inner { position:relative;z-index:1;max-width:880px; }
+.cta-eye { font-family:var(--f-mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--warm-gray);margin-bottom:28px;display:flex;align-items:center;gap:12px; }
+.cta-h { font-family:var(--f-display);font-weight:900;font-size:clamp(3.2rem,8vw,7rem);line-height:.9;letter-spacing:-.04em;color:var(--ink);margin-bottom:44px; }
+.cta-h em { font-style:italic;color:var(--coral); }
+.cta-links { display:flex;flex-wrap:wrap;gap:10px; }
+.cta-lnk { font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase; color:var(--ink);text-decoration:none;border:1.5px solid var(--rule);padding:12px 20px; display:inline-flex;align-items:center;gap:8px;cursor:none; transition:border-color .3s,color .3s; }
+footer { padding:32px 52px;display:flex;align-items:center;justify-content:space-between; }
+@media (max-width: 900px){ /* responsive unchanged */ .games-section { padding: 72px 24px; } .games-grid { grid-template-columns: 1fr; } nav .nav-ul { display:none; } #hero { grid-template-columns:1fr;padding:100px 24px 60px; } h1.hero-h1 { border-right:none;padding-right:0; } .hero-r { padding-left:0;margin-top:40px; } .stat-strip { grid-template-columns:1fr;gap:20px; } .smart-intro { flex:0 0 100vw;border-right:none; } .sig-grid { grid-template-columns:1fr; } .sig-div { display:none; } .steps { padding-right:0; } .steps-r { padding-left:0;margin-top:48px; } .impact-grid { grid-template-columns:1fr; } .kit-grid { grid-template-columns:1fr; } #signal,#impact,#firstaid,#cta { padding:72px 24px; } footer { flex-direction:column;gap:10px;padding:24px; } }
+</style>
+</head>
+<body>
+
+<div id="cur"></div><div id="cur-ring"></div><div id="pg"></div>
+<nav id="nav"><div class="logo">Spread<span>theWord</span><sup>Tech</sup></div><ul class="nav-ul"><li><a href="#smart">Signal path</a></li><li><a href="#signal">Challenges</a></li><li><a href="#impact">Mobile money</a></li><li><a href="#firstaid">Innovations</a></li><li><a href="#games">Games</a></li><li><a href="#cta">Act</a></li></ul></nav>
+
+<div class="ticker-band"><div class="ticker-inner"><span>📡 Cell towers connect the world</span><span class="sep">◆</span><span>🌍 Undersea cables</span><span class="sep">◆</span><span>📱 Mobile money in West Africa</span><span class="sep">◆</span><span>🛰️ Satellites fill the gaps</span><span class="sep">◆</span><span>💡 Signal = voice → data</span><span class="sep">◆</span><span>📶 From your phone to the world</span><span class="sep">◆</span><span>📲 Spread the word, stay connected</span><span class="sep">◆</span></div></div>
+
+<!-- HERO: new concept about cell phone technology -->
+<section id="hero"><div class="hero-over">Task 2 · Spreading the word – cell phone technology</div>
+  <h1 class="hero-h1"><span class="hline"><span class="hword">Signal</span></span><span class="hline"><em class="hword">Journey.</em></span><span class="hline"><span class="hword">Global</span></span><span class="hline"><em class="hword">Voice.</em></span></h1>
+  <div class="hero-r"><p class="hero-desc">From your voice to a friend across the ocean – discover how cell towers, fiber cables, and satellites make it possible. Learn why some places stay offline and how new tech changes lives.</p>
+    <div class="btn-row"><a href="#smart" class="btn btn-fill"><span>See the path ↓</span></a><a href="#signal" class="btn"><span>Challenges</span></a><a href="#impact" class="btn"><span>West Africa story</span></a></div></div>
+  <div class="stat-strip"><div class="hs"><span class="hs-n" data-count="5.4" data-dec="1">0</span><span class="hs-l">Billion mobile users</span></div><div class="hs"><span class="hs-n" data-count="37" data-dec="0">0</span><span class="hs-l">% of world still unconnected</span></div><div class="hs"><span class="hs-n" data-count="1.4" data-dec="1">0</span><span class="hs-l">Billion use mobile money</span></div></div>
+</section>
+
+<!-- SMART HORIZONTAL: 5 stages of cell signal journey -->
+<div id="smart-wrap"><div id="smart-pin"><div class="smart-intro"><div class="sec-eye">Cell phone signal journey</div><h2 class="sec-h2">How your voice <em>travels far</em></h2><p class="sec-p">Every call or message goes through 5 incredible steps. Swipe right to follow the path from your phone to another device across the globe.</p><div class="s-hint"><p>➡️ move to see stages</p><div id="s-bar"></div></div></div>
+<div class="smart-track" id="strack">
+  <div class="sc"><div class="sc-top"><span class="sc-idx">01 / 05</span><div class="sc-ico">📱</div></div><div class="sc-bot"><div class="sc-rule"></div><div class="sc-eye">Your device</div><h3 class="sc-t">Voice → Digital bits</h3><p class="sc-b">Your phone turns sound into tiny data packets. A radio wave carries them to the nearest tower.</p></div><div class="sc-ghost">📡</div></div>
+  <div class="sc"><div class="sc-top"><span class="sc-idx">02 / 05</span><div class="sc-ico">🏢</div></div><div class="sc-bot"><div class="sc-rule"></div><div class="sc-eye">Cell tower (base station)</div><h3 class="sc-t">Tower catches the signal</h3><p class="sc-b">The tower receives your signal, amplifies it, and sends it to a switching center through fiber optics.</p></div><div class="sc-ghost">📶</div></div>
+  <div class="sc"><div class="sc-top"><span class="sc-idx">03 / 05</span><div class="sc-ico">🌊</div></div><div class="sc-bot"><div class="sc-rule"></div><div class="sc-eye">Undersea cables</div><h3 class="sc-t">Across oceans in glass threads</h3><p class="sc-b">Fiber-optic cables under the sea carry signals between continents at nearly light speed.</p></div><div class="sc-ghost">🌍</div></div>
+  <div class="sc"><div class="sc-top"><span class="sc-idx">04 / 05</span><div class="sc-ico">🛰️</div></div><div class="sc-bot"><div class="sc-rule"></div><div class="sc-eye">Satellite backup</div><h3 class="sc-t">Space bridges the gap</h3><p class="sc-b">In remote areas, satellites bounce the signal down to earth, connecting mountains and deserts.</p></div><div class="sc-ghost">🚀</div></div>
+  <div class="sc" style="border-right:none;"><div class="sc-top"><span class="sc-idx">05 / 05</span><div class="sc-ico">📞</div></div><div class="sc-bot"><div class="sc-rule"></div><div class="sc-eye">Friend's phone</div><h3 class="sc-t">Reassembly & delivery</h3><p class="sc-b">The tower near your friend sends the data, and their phone turns bits back into your voice. Hello!</p></div><div class="sc-ghost">✨</div></div>
+</div></div></div>
+
+<!-- SIGNAL: technological challenges and solutions -->
+<section id="signal"><div class="sec-eye">Challenges & solutions</div><h2 class="sec-h2">Why every place <em>isn't connected</em> (yet)</h2><div class="sig-grid"><div class="steps"><div class="step"><div class="step-n">⚡</div><div><div class="step-tag">Challenge: distance & terrain</div><h3 class="step-h">Mountains, forests, deserts</h3><p class="step-p">Solution: Satellite networks + high-altitude platforms. New low-orbit satellites (Starlink, OneWeb) beam signals to remote villages.</p></div></div><div class="step"><div class="step-n">💰</div><div><div class="step-tag">Challenge: infrastructure cost</div><h3 class="step-h">Towers cost millions</h3><p class="step-p">Solution: Shared towers, solar-powered base stations. Companies cooperate to lower costs.</p></div></div><div class="step"><div class="step-n">🔋</div><div><div class="step-tag">Challenge: no electricity</div><h3 class="step-h">Power for towers and phones</h3><p class="step-p">Solution: Solar panels, wind turbines, and efficient equipment. Many African towers run on renewable energy.</p></div></div><div class="step"><div class="step-n">📡</div><div><div class="step-tag">Challenge: signal interference</div><h3 class="step-h">Buildings, weather</h3><p class="step-p">Solution: Multiple towers + frequency hopping. 5G uses beamforming to focus signals.</p></div></div></div><div class="sig-div"></div><div class="steps-r"><div class="challenges"><h3 class="ch-h">Where phones <em>struggle</em></h3><div class="ch-item"><div class="ch-ico">🏔️</div><div><div class="ch-hd">High mountains</div><div class="ch-bd">No line-of-sight to towers. Solution: relay towers on peaks.</div></div></div><div class="ch-item"><div class="ch-ico">🏝️</div><div><div class="ch-hd">Remote islands</div><div class="ch-bd">Undersea cables are expensive. Solution: satellite internet.</div></div></div><div class="ch-item"><div class="ch-ico">🏜️</div><div><div class="ch-hd">Sahara desert</div><div class="ch-bd">Vast empty zones. Solution: solar-powered roaming towers + LEO satellites.</div></div></div><div class="ch-item"><div class="ch-ico">🌧️</div><div><div class="ch-hd">Heavy storms</div><div class="ch-bd">Rain fade disrupts signals. Solution: redundant ground networks.</div></div></div></div></div></div></section>
+
+<!-- IMPACT: mobile money in West Africa (book example) -->
+<section id="impact"><div class="sec-eye">Real-world transformation</div><h2 class="sec-h2">West Africa: <em>Phone as a bank</em></h2><div class="impact-grid"><div class="impact-feat"><div><div class="sec-eye" style="color:rgba(245,240,232,.3);">Case study · Ghana, Kenya, Nigeria</div><h2 class="sec-h2">Paying with <em>mobile money</em></h2><p style="color:rgba(245,240,232,.55);font-size:1rem;line-height:1.8;max-width:360px;">In places without traditional banks, services like M-Pesa let anyone save, send, and pay using a simple phone. Farmers get paid instantly, families transfer money across borders, and small businesses thrive.</p></div><div class="feat-stat"><span class="feat-n" data-count="68" data-dec="0">0</span><div class="feat-l">million active mobile money users in West Africa</div></div></div><div class="ic"><div class="ic-tag" style="color:var(--sage);"><span class="dot dpro"></span>Advantages</div><h3 class="ic-h">How it helps</h3><ul class="ic-list"><li><span class="arr">→</span>Financial inclusion for millions without bank accounts</li><li><span class="arr">→</span>Safe digital transactions instead of cash</li><li><span class="arr">→</span>Lower cost for sending money home</li><li><span class="arr">→</span>Empowers women entrepreneurs</li></ul></div><div class="ic"><div class="ic-tag" style="color:var(--coral);"><span class="dot dcon"></span>Disadvantages</div><h3 class="ic-h">Risks & limits</h3><ul class="ic-list con"><li><span class="arr">→</span>Scams and fraud targeting mobile users</li><li><span class="arr">→</span>Requires phone and network coverage</li><li><span class="arr">→</span>Transaction fees can add up</li><li><span class="arr">→</span>Privacy concerns with data collection</li></ul></div></div></section>
+
+<!-- FIRST AID: spreading innovation & future tech -->
+<section id="firstaid"><div class="sec-eye">Future connectivity</div><h2 class="sec-h2" style="color:var(--cream);">Innovations that <em>spread the word</em></h2><p class="sec-p">New technologies bridging the digital divide.</p><div class="kit-grid"><div class="kc"><div class="kc-n">🛰️</div><h3 class="kc-h">LEO Satellites</h3><p class="kc-p">Thousands of small satellites in low orbit provide high-speed internet to the most remote areas.</p><a href="#" class="kc-a">Learn more ↗</a></div><div class="kc"><div class="kc-n">📶</div><h3 class="kc-h">TV White Spaces</h3><p class="kc-p">Unused TV frequencies can carry internet signals over long distances, perfect for rural schools.</p><a href="#" class="kc-a">Explore ↗</a></div><div class="kc"><div class="kc-n">⚡</div><h3 class="kc-h">Solar Towers</h3><p class="kc-p">Self-sufficient, solar-powered cell towers bringing connectivity off-grid.</p><a href="#" class="kc-a">Innovation ↗</a></div><div class="kc"><div class="kc-n">📱</div><h3 class="kc-h">eSIM & roaming</h3><p class="kc-p">Electronic SIM cards allow seamless network switching, global access.</p><a href="#" class="kc-a">Details ↗</a></div><div class="kc"><div class="kc-n">🌍</div><h3 class="kc-h">Community networks</h3><p class="kc-p">Locally owned mesh networks built by villages for affordable connectivity.</p><a href="#" class="kc-a">Read ↗</a></div><div class="kc"><div class="kc-n">📚</div><h3 class="kc-h">Digital literacy</h3><p class="kc-p">Teaching communities how to use tech safely and effectively.</p><a href="#" class="kc-a">Get involved ↗</a></div></div></section>
+
+<!-- GAMES (fully functional, same mechanics, only descriptions adjusted) -->
+<section id="games" class="games-section"><div class="sec-eye">Play & learn · tech safety</div><h2 class="sec-h2">Test your <em>digital skills</em></h2><div class="games-grid"><div class="game-card"><div class="game-title">📱 Spot the scam <span class="game-badge">Quiz</span></div><div class="game-desc">Can you detect phishing attempts related to mobile money?</div><div class="game-area" id="phishGame"><div class="game-score" id="phishScore">Score: 0</div><div id="phishQuestion" class="scenario-text">"Your M-Pesa account is locked! Click: m-pesa-secure.net"</div><button class="phish-quiz-option" data-correct="0">🚨 Trick! Never click</button><button class="phish-quiz-option" data-correct="1">✅ Seems real, click</button><div id="phishFeedback" class="phish-feedback"></div><button id="nextPhish" class="game-btn">Next →</button></div></div><div class="game-card"><div class="game-title">🔐 Strong passwords <span class="game-badge">Drag & drop</span></div><div class="game-desc">Match passwords to strength – protect your mobile account.</div><div class="game-area"><div class="drag-zone" id="passwordsContainer"><div class="drag-item" draggable="true" data-strength="weak">123456</div><div class="drag-item" draggable="true" data-strength="medium">Kumasi2024!</div><div class="drag-item" draggable="true" data-strength="strong">M0b1l3$@f3#9x</div><div class="drag-item" draggable="true" data-strength="weak">password</div><div class="drag-item" draggable="true" data-strength="strong">Accra#7$R!2kL</div></div><div class="drop-zone" id="weakDrop">💀 Weak (Drop here)</div><div class="drop-zone" id="mediumDrop">⚡ Medium (Drop here)</div><div class="drop-zone" id="strongDrop">🛡️ Strong (Drop here)</div><div id="dragFeedback" class="security-message"></div><button id="resetDrag" class="game-btn">Reset</button></div></div><div class="game-card"><div class="game-title">⚡ Quick reflex <span class="game-badge">Reaction</span></div><div class="game-desc">Is this mobile message safe or a trick? 10 rounds.</div><div class="game-area" id="reflexGame"><div class="game-score" id="reflexScore">Safe clicks: 0 / 10</div><div id="reflexPrompt" class="scenario-text">👉 Press Start</div><div id="reflexButtons"><button id="clickSafe" class="game-btn" style="background:var(--sage);">✅ SAFE</button><button id="clickDanger" class="game-btn" style="background:var(--coral);">🚫 TRICK</button></div><button id="startReflex" class="game-btn">Start Game</button><div id="reflexMsg" class="phish-feedback"></div></div></div><div class="game-card"><div class="game-title">🧠 Match the problem <span class="game-badge">Memory</span></div><div class="game-desc">Match connectivity issue to solution.</div><div class="game-area" id="matchGame"><div class="game-score" id="matchScore">Matches: 0 / 4</div><div id="matchGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; margin:10px 0;"></div><button id="resetMatch" class="game-btn">New Game</button><div id="matchMsg" class="phish-feedback"></div></div></div></div></section>
+
+<section id="cta"><div class="cta-bg">CONNECT</div><div class="cta-inner"><div class="cta-eye">Spread the word</div><h2 class="cta-h">Help close the <em>digital divide.</em><br>Share what you learned.</h2><div class="cta-links"><a href="#" class="cta-lnk">ITU Connect 2030</a><a href="#" class="cta-lnk">GSMA Mobile Money</a><a href="#" class="cta-lnk">Satellite Internet</a><a href="#" class="cta-lnk">Digital Inclusion</a></div></div></section>
+<footer><p>© 2025 · Spreading the word – cell phone technology</p><p>Sources: ITU, GSMA, UNESCO · Task 2: Global communication</p></footer>
+
+<script>
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+// (all original interactive scripts kept exactly, only question arrays adapted slightly for concept)
+const cur = document.getElementById('cur'), ring = document.getElementById('cur-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+(function loop(){ rx+=(mx-rx)*.11; ry+=(my-ry)*.11; cur.style.left=mx+'px'; cur.style.top=my+'px'; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
+document.querySelectorAll('a,button,.sc,.kc,.game-btn,.phish-quiz-option,.drag-item,.cta-lnk').forEach(el=>{ el.addEventListener('mouseenter',()=>cur.classList.add('big')); el.addEventListener('mouseleave',()=>cur.classList.remove('big')); });
+ScrollTrigger.create({ trigger:'body',start:'top top',end:'bottom bottom', onUpdate:s=>gsap.set('#pg',{scaleX:s.progress}) });
+let py=0; ScrollTrigger.create({start:'top -80',end:99999,onUpdate(s){ const y=s.scroll(); gsap.to('#nav',{yPercent:y>py&&y>200?-120:0,duration:.5}); py=y; }});
+const htl=gsap.timeline({delay:.25}); htl.from('.hword',{yPercent:105,opacity:0,duration:1,ease:'power4.out',stagger:.09}).to('.hero-over',{opacity:1,duration:.7}).to('.hero-desc',{opacity:1,y:0,duration:.8}).to('.btn-row',{opacity:1,y:0,duration:.8}).to('.hs',{opacity:1,y:0,duration:.6,stagger:.1});
+function countUp(els){ els.forEach(el=>{ const t=parseFloat(el.dataset.count); const d=parseInt(el.dataset.dec||0); gsap.to({v:0},{v:t,duration:2,ease:'power2.out', onUpdate(){el.textContent=this.targets()[0].v.toFixed(d);} }); }); }
+htl.add(()=>countUp(document.querySelectorAll('.hs-n'))); ScrollTrigger.create({trigger:'#impact',start:'top 70%',once:true,onEnter:()=>countUp(document.querySelectorAll('.feat-n'))});
+const strack=document.getElementById('strack'); const scards=[...strack.querySelectorAll('.sc')]; const trackW=scards.reduce((a,c)=>a+c.offsetWidth+2,0); strack.style.width=trackW+'px'; const intrW=document.querySelector('.smart-intro').offsetWidth; const scrollDist=trackW-(window.innerWidth-intrW); ScrollTrigger.create({ trigger:'#smart-wrap', pin:true, scrub:.7, start:'top top', end:()=>'+='+(scrollDist>0?scrollDist:1), animation:gsap.to(strack,{x:()=>-Math.max(0,scrollDist),ease:'none'}), onUpdate(s){gsap.set('#s-bar',{scaleX:s.progress,transformOrigin:'left'});} });
+document.querySelectorAll('.step').forEach((el,i)=>{ gsap.to(el,{opacity:1,y:0,duration:.7,scrollTrigger:{trigger:el,start:'top 86%'},delay:i*.06}); });
+document.querySelectorAll('.ch-item').forEach((el,i)=>{ gsap.to(el,{opacity:1,x:0,duration:.7,scrollTrigger:{trigger:el,start:'top 87%'},delay:i*.08}); });
+document.querySelectorAll('.ic').forEach((el,i)=>{ gsap.to(el,{opacity:1,y:0,duration:.7,scrollTrigger:{trigger:el,start:'top 85%'},delay:i*.1}); });
+document.querySelectorAll('.kc').forEach((el,i)=>{ gsap.to(el,{opacity:1,y:0,duration:.7,scrollTrigger:{trigger:el,start:'top 88%'},delay:i*.07}); });
+ScrollTrigger.create({trigger:'#cta',start:'top 72%',once:true,onEnter:()=>{ gsap.from('.cta-eye',{y:16,opacity:0,duration:.7}); gsap.from('.cta-h',{y:56,opacity:0,duration:1.1,delay:.15}); gsap.from('.cta-lnk',{y:18,opacity:0,stagger:.09,duration:.7,delay:.4}); }});
+gsap.to('.cta-bg',{yPercent:-12,scrollTrigger:{trigger:'#cta',scrub:1}});
+document.querySelectorAll('.btn,.cta-lnk').forEach(el=>{ el.addEventListener('mousemove',e=>{ const r=el.getBoundingClientRect(); const x=e.clientX-r.left-r.width/2; const y=e.clientY-r.top-r.height/2; gsap.to(el,{x:x*.18,y:y*.18,duration:.35}); }); el.addEventListener('mouseleave',()=>{ gsap.to(el,{x:0,y:0,duration:.65}); }); });
+document.querySelectorAll('.sc').forEach(el=>{ el.addEventListener('mouseenter',()=>gsap.to(el,{scale:1.01,duration:.4})); el.addEventListener('mouseleave',()=>gsap.to(el,{scale:1,duration:.5})); });
+// game scripts (full functionality)
+let phishIndex=0,phishScore=0; const phishQuestions=[{text:"📱 'Your mobile money needs verification: tinyurl.com/mpesa-fix'",correct:0,explanation:"Trick! Never click unknown links."},{text:"💰 'Congrats! You won 5000 CFA. Click to claim: legit-prize.com'",correct:0,explanation:"Fake prize – don't click."},{text:"📞 Your network operator: 'Update your SIM now or lose service' (official SMS)",correct:1,explanation:"This could be real, but check the number first."},{text:"🔐 'Someone tried to log into your account. Verify here: mybank.com'",correct:0,explanation:"Fake – go directly to the real website."}];
+function updatePhish(){ const q=phishQuestions[phishIndex%phishQuestions.length]; document.getElementById('phishQuestion').innerHTML=q.text; document.getElementById('phishFeedback').innerHTML=''; document.getElementById('phishScore').innerHTML=`Score: ${phishScore}`; }
+document.querySelectorAll('.phish-quiz-option').forEach(btn=>{ btn.addEventListener('click',(e)=>{ const isCorrect=btn.dataset.correct==phishQuestions[phishIndex%phishQuestions.length].correct; if(isCorrect){ phishScore++; document.getElementById('phishFeedback').innerHTML=`✅ ${phishQuestions[phishIndex%phishQuestions.length].explanation}`; } else { document.getElementById('phishFeedback').innerHTML=`❌ ${phishQuestions[phishIndex%phishQuestions.length].explanation}`; } document.getElementById('phishScore').innerHTML=`Score: ${phishScore}`; setTimeout(()=>{ phishIndex++; updatePhish(); },1200); }); });
+document.getElementById('nextPhish').addEventListener('click',()=>{ phishIndex++; updatePhish(); }); updatePhish();
+let dragItems=document.querySelectorAll('.drag-item'), dropZones={weak:document.getElementById('weakDrop'),medium:document.getElementById('mediumDrop'),strong:document.getElementById('strongDrop')};
+function handleDragStart(e){ e.dataTransfer.setData('text/plain',e.target.dataset.strength); e.dataTransfer.setData('text/id',e.target.innerText); }
+function allowDrop(e){ e.preventDefault(); }
+function handleDrop(e,expectedStrength){ e.preventDefault(); const strength=e.dataTransfer.getData('text/plain'); const draggedText=e.dataTransfer.getData('text/id'); const draggedEl=[...dragItems].find(el=>el.innerText===draggedText); if(strength===expectedStrength && draggedEl && draggedEl.parentNode){ document.getElementById('dragFeedback').innerHTML=`✓ Correct! "${draggedText}" is ${expectedStrength.toUpperCase()}.`; draggedEl.remove(); } else if(draggedEl && draggedEl.parentNode){ document.getElementById('dragFeedback').innerHTML=`✗ "${draggedText}" is not ${expectedStrength.toUpperCase()}.`; } }
+dragItems.forEach(el=>{ el.setAttribute('draggable','true'); el.addEventListener('dragstart',handleDragStart); });
+dropZones.weak.addEventListener('dragover',allowDrop); dropZones.weak.addEventListener('drop',(e)=>handleDrop(e,'weak'));
+dropZones.medium.addEventListener('dragover',allowDrop); dropZones.medium.addEventListener('drop',(e)=>handleDrop(e,'medium'));
+dropZones.strong.addEventListener('dragover',allowDrop); dropZones.strong.addEventListener('drop',(e)=>handleDrop(e,'strong'));
+document.getElementById('resetDrag').addEventListener('click',()=>location.reload());
+let reflexActive=false,reflexCount=0,reflexCorrect=0,currentSafe=true; const reflexScenarios=[{text:"📱 'Your account has been locked. Click to restore: secure-mobile.com'",safe:false},{text:"📞 Official network message: 'Your monthly plan renews tomorrow'",safe:true},{text:"💰 'Send 500 FCFA to this number to unlock 5000 FCFA'",safe:false},{text:"🔒 Your bank's real app notification (requires login inside app)",safe:true}];
+function startReflexGame(){ reflexActive=true; reflexCount=0; reflexCorrect=0; document.getElementById('reflexScore').innerHTML=`Safe clicks: 0 / 10`; document.getElementById('reflexMsg').innerHTML=''; nextReflexRound(); }
+function nextReflexRound(){ if(reflexCount>=10){ endReflexGame(); return; } const rand=Math.floor(Math.random()*reflexScenarios.length); const sc=reflexScenarios[rand]; currentSafe=sc.safe; document.getElementById('reflexPrompt').innerHTML=sc.text; reflexCount++; document.getElementById('reflexScore').innerHTML=`Safe clicks: ${reflexCorrect} / ${reflexCount}`; }
+function handleReflex(choiceIsSafe){ if(!reflexActive) return; if(choiceIsSafe===currentSafe){ reflexCorrect++; document.getElementById('reflexMsg').innerHTML="✅ +1 point"; } else { document.getElementById('reflexMsg').innerHTML="⚠️ Wrong! "+(currentSafe?"That message was safe.":"That was a trick!"); } document.getElementById('reflexScore').innerHTML=`Safe clicks: ${reflexCorrect} / ${reflexCount}`; setTimeout(()=>{ if(reflexActive && reflexCount<10) nextReflexRound(); else if(reflexCount>=10) endReflexGame(); },800); }
+function endReflexGame(){ reflexActive=false; document.getElementById('reflexMsg').innerHTML=`Game over! Score ${reflexCorrect}/10. ${reflexCorrect>=7?"🏆 Hero!":"🔁 Play again."}`; document.getElementById('reflexPrompt').innerHTML=reflexCorrect>=7?"You mastered mobile safety!":"Keep practicing!"; }
+document.getElementById('startReflex').addEventListener('click',startReflexGame);
+document.getElementById('clickSafe').addEventListener('click',()=>handleReflex(true));
+document.getElementById('clickDanger').addEventListener('click',()=>handleReflex(false));
+let matchPairs=[{tip:"Weak password",action:"Use long & random characters"},{tip:"Suspicious SMS asking for PIN",action:"Never share – report it"},{tip:"No cell signal in rural area",action:"Use satellite or mesh network"},{tip:"Mobile money transfer error",action:"Call official helpline"}];
+let matchCards=[],selectedIndex=null,matchScore=0,matchLock=false;
+function buildMatchGame(){ matchCards=[]; matchPairs.forEach((pair,idx)=>{ matchCards.push({type:'tip',text:pair.tip,pairId:idx,matched:false}); matchCards.push({type:'action',text:pair.action,pairId:idx,matched:false}); }); for(let i=matchCards.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [matchCards[i],matchCards[j]]=[matchCards[j],matchCards[i]]; } matchScore=0; selectedIndex=null; matchLock=false; document.getElementById('matchScore').innerHTML=`Matches: 0 / ${matchPairs.length}`; document.getElementById('matchMsg').innerHTML=''; renderMatchGrid(); }
+function renderMatchGrid(){ const grid=document.getElementById('matchGrid'); grid.innerHTML=''; matchCards.forEach((card,idx)=>{ const btn=document.createElement('button'); btn.className='game-btn'; btn.style.cssText='background:var(--ink); margin:4px; font-size:0.7rem; padding:12px; width:100%;'; btn.textContent=card.matched?'✓ MATCHED!':card.text; if(!card.matched) btn.onclick=()=>handleMatchClick(idx); else btn.disabled=true; grid.appendChild(btn); }); }
+function handleMatchClick(idx){ if(matchLock||matchCards[idx].matched) return; if(selectedIndex===null){ selectedIndex=idx; renderMatchGrid(); } else { if(selectedIndex===idx){ selectedIndex=null; renderMatchGrid(); return; } matchLock=true; const card1=matchCards[selectedIndex]; const card2=matchCards[idx]; if(card1.pairId===card2.pairId && card1.type!==card2.type){ card1.matched=true; card2.matched=true; matchScore++; document.getElementById('matchScore').innerHTML=`Matches: ${matchScore} / ${matchPairs.length}`; document.getElementById('matchMsg').innerHTML='✓ Correct match!'; if(matchScore===matchPairs.length) document.getElementById('matchMsg').innerHTML='🎉 Perfect! Expert!'; selectedIndex=null; renderMatchGrid(); } else { document.getElementById('matchMsg').innerHTML='✗ Not a match. Try again!'; setTimeout(()=>{ selectedIndex=null; renderMatchGrid(); document.getElementById('matchMsg').innerHTML=''; matchLock=false; },800); return; } matchLock=false; } }
+document.getElementById('resetMatch').addEventListener('click',buildMatchGame); buildMatchGame();
+</script>
+</body>
+</html>
